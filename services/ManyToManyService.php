@@ -6,6 +6,35 @@ class ManyToManyService extends BaseApplicationComponent
 
     var $element;
 
+    public $allowed = array(
+        'Entries',
+    );
+
+    /**
+     * Returns all Entry Field Types
+     * @return array
+     */
+    public function getAllEntryFields()
+    {
+        // Allowed Fields
+        $allowedFields = array();
+
+        // All Field
+        $fields = craft()->fields->getAllFields();
+        if (!empty($fields))
+        {
+            foreach ($fields as $field)
+            {
+                if (in_array($field->getFieldType()->name, $this->allowed))
+                {
+                    $allowedFields[$field->handle] = $field->name;
+                }
+            }
+        }
+
+        return $allowedFields;
+    }
+
     /**
      * [getRelatedEntries returns]
      * Returns related entries from an element limited to a section

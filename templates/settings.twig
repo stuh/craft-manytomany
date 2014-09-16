@@ -1,24 +1,40 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.selectField({
-    label: "Linked Section"|t,
-    instructions: "What is the section you want to link in this relationship?"|t,
-    id: 'source',
-    name: 'source[value]',
-    options: elements,
-    value: source.value
-})}}
+{% includeJsResource 'manytomany/js/same-section-relationships.js' %}
 
-{{ forms.hidden({
-    name: 'source[type]',
-    value: 'section'
-})}}
+<h2><em>[{{ "Many to Many"|t }}]</em> Same Section Relationship Settings</h2>
 
-{{ forms.selectField({
-    label: "Associated Field"|t,
-    instructions: "This is the field you are using to create the initial association. This has to be created first."|t,
-    id: 'singleField',
-    name: 'singleField',
-    options: fields,
-    value: singleField
-})}}
+<p>
+	<strong>Same Section Relationships</strong> is a feature added as of <em>Many to Many</em> v0.2. This allows the user to create relationships for entries that are within the same section. For example, if a section has an Entries FieldType of "Spouse" that forms a relationship with an entry in the same section, selecting it for one of the entries will create the relationship in the associated entry if it doesn't already exist.
+</p>
+
+<p>
+	<strong>Usage</strong><br />
+	To use this feature, you need to select the Field that is used to create the relationship and the section in which it is being utilized. Then click the "Add" button. This way you can have multiple Same Section relationships and reuse a field should you want to.
+</p>
+<p>
+	After saving these settings, Many to Many will automatically create the relationship if need be when an entry from the associated section is saved or created. No further action is needed on your part.
+</p>
+
+<hr>
+
+<input type="hidden" name="selectedFieldsPlusSection" value="" />
+<table class="data" id="ssr-table">
+	<tr>
+		<td>
+			{{ forms.selectField({
+			    label:  'Field'|t,
+			    id:     'linkedField',
+			    options: fields
+			})}}
+		</td>
+		<td>
+			{{ forms.selectField({
+			    label:   'Section'|t,
+			    id:      'linkedSection',
+			    options: sections
+			})}}
+		</td>
+		<td style="vertical-align: bottom;"><input class="btn submit" id="add-relationship" type="button" value="+ Add"></td>
+	</tr>
+</table>

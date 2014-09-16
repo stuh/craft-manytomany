@@ -135,7 +135,7 @@ class ManyToMany_ManyToManyFieldType extends BaseFieldType
         $singleField = $this->getSettings()->singleField;
         
         return craft()->templates->render(
-            'manytomany/settings', array(
+            'manytomany/fieldtype-settings', array(
                 'source'      => $source,
                 'singleField' => $singleField,
                 'elements'    => $elements,

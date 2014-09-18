@@ -146,4 +146,125 @@ class ManyToManyService extends BaseApplicationComponent
 
     }
 
+    /**
+     * Checks for Same Side Relationship status and add and/or delete if necessary
+     * @param  array  $entries        
+     * @param  string $fieldHandle    
+     * @param  int $currentEntry   
+     * @param  string $currentSection 
+     * @return null               
+     */
+    public function processSameSideRelationships($rawEntries = array(), $fieldHandle = null, $currentEntry = null, $currentSection = null)
+    {
+        // Filter so that only entries from this section are available.
+        // This is so you can still use the same filed to manage relationships
+        // from one side, but to tie two together, they have to be in the 
+        // same section.
+        $entries = $this->sanitizeEntries($rawEntries, $currentSection);
+
+        // Field Info
+        if (empty($fieldHandle)) return;
+        $field   = craft()->fields->getFieldByHandle($fieldHandle);
+        $fieldId = $field->id;
+
+        // Check if this field is setup as translatable, and if it is: exit. Not supported currently.
+        if ($field->translatable) return;
+        
+        // Check for the existing relationship and if it's not there, add it.
+        if (!empty($entries))
+        {
+            foreach ($entries as $entryId)
+            {
+                $exists = craft()->db->createCommand()
+                    ->select('id')
+                    ->from('relations')
+                    ->where('fieldId = :fieldId', array(':fieldId' => $fieldId))
+                    ->andWhere('sourceId = :sourceId', array(':sourceId' => $entryId))
+                    ->andWhere('targetId = :targetId', array(':targetId' => $currentEntry))
+                    ->queryColumn();
+                // The relationship doesn't exist, create it.
+                if (empty($exists)) {
+                    $columns = array(
+                        'fieldId'   => $fieldId,
+                        'sourceId'  => $entryId,
+                        'targetId'  => $currentEntry,
+                        'sortOrder' => 0
+                        );
+                    craft()->db->createCommand()->insert('relations', $columns);
+                }
+            }
+        }
+
+        // That was the easy part. The trickier part is deleting relationships
+        // that may have existed but subsequently got deleted by the user. We
+        // have to query the DB and see if there are any relationships with this
+        // entry and field where this entry is set as the target. Then, we have
+        // to check and see if the sibling relationship exists at all. If it does,
+        // we leave it, but if it doesn't, that means the relationships was removed
+        // and we have to also delete the record.
+        $toDelete = craft()->db->createCommand()
+            ->select('id, sourceId')
+            ->from('relations')
+            ->where('fieldId = :fieldId', array(':fieldId' => $fieldId))
+            ->andWhere('targetId = :targetId', array(':targetId' => $currentEntry))
+            ->queryAll();
+        if (!empty($toDelete))
+        {
+            foreach ($toDelete as $id)
+            {
+                // First, check if this source ID is in the supported section!
+                // This check allows the relationship with this entry and field to
+                // exist in other places throughout the CMS and will NOT manage it.
+                $entriesSection = craft()->entries->getEntryById($id);
+                if($entriesSection->section->handle == $currentSection)
+                {
+                    // Now, check if the sibling relationship exists.
+                    $exists = craft()->db->createCommand()
+                        ->select('id')
+                        ->from('relations')
+                        ->where('fieldId = :fieldId', array(':fieldId' => $fieldId))
+                        ->andWhere('sourceId = :sourceId', array(':sourceId' => $currentEntry))
+                        ->andWhere('targetId = :targetId', array(':targetId' => $id['sourceId']))
+                        ->queryColumn();
+                    // It doesn't exist, meaning this relationship has no sibling. 
+                    // Currently it's orphaned from it's two way association. Delete it.
+                    if (empty($exists))
+                    {
+                        $oldRelationConditions = array(
+                            'and',
+                            'id = :id'
+                        );
+                        $oldRelationParams = array(
+                            ':id'  => $id['id']
+                        );
+                        craft()->db->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a list of entries in the defined section
+     * @param  array $entries 
+     * @param  string $section 
+     * @return array
+     */
+    private function sanitizeEntries($entries, $section)
+    {
+        $filteredEntries = array();
+        if (!empty($entries))
+        {
+            foreach ($entries as $e)
+            {
+                $entry = craft()->entries->getEntryById($e);
+                if ($section === $entry->section->handle)
+                {
+                    $filteredEntries[] = $entry->id;
+                }
+            }
+        }
+        return $filteredEntries;
+    }
+
 }

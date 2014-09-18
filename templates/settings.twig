@@ -1,40 +1,61 @@
 {% import "_includes/forms" as forms %}
 
-{% includeJsResource 'manytomany/js/same-section-relationships.js' %}
+{% includeJsResource 'manytomany/js/same-side-relationships.js' %}
 
-<h2><em>[{{ "Many to Many"|t }}]</em> Same Section Relationship Settings</h2>
+<h2><em>[{{ "Many to Many"|t }}]</em> Same Side Relationship Settings</h2>
 
 <p>
-	<strong>Same Section Relationships</strong> is a feature added as of <em>Many to Many</em> v0.2. This allows the user to create relationships for entries that are within the same section. For example, if a section has an Entries FieldType of "Spouse" that forms a relationship with an entry in the same section, selecting it for one of the entries will create the relationship in the associated entry if it doesn't already exist.
+	<strong>Same Side Relationships</strong> is a feature added as of <em>Many to Many</em> v0.2. This allows the user to create relationships for entries that are within the same section. For example, if a section has an Entries FieldType of "Spouse" that forms a relationship with an entry in the same section, selecting it for one of the entries will create the relationship in the associated entry if it doesn't already exist.
 </p>
 
 <p>
 	<strong>Usage</strong><br />
-	To use this feature, you need to select the Field that is used to create the relationship and the section in which it is being utilized. Then click the "Add" button. This way you can have multiple Same Section relationships and reuse a field should you want to.
+	To use this feature, you need to select the Field that is used to create the relationship and the section in which it is being utilized. Then click the "Add" button. This way you can have multiple Same Side relationships and reuse a field should you want to.
 </p>
 <p>
 	After saving these settings, Many to Many will automatically create the relationship if need be when an entry from the associated section is saved or created. No further action is needed on your part.
 </p>
-
+<p>
+	<strong>Note:</strong> Same Side Relationships can only exist across entries that are in the same section. In other words, if you create an Entry field that allows entries from multiple sections and then try and use that as your Same Side Relationship Field, only relationships created within same sections are linked.
+</p>
 <hr>
 
-<input type="hidden" name="selectedFieldsPlusSection" value="" />
-<table class="data" id="ssr-table">
-	<tr>
-		<td>
-			{{ forms.selectField({
-			    label:  'Field'|t,
-			    id:     'linkedField',
-			    options: fields
-			})}}
-		</td>
-		<td>
-			{{ forms.selectField({
-			    label:   'Section'|t,
-			    id:      'linkedSection',
-			    options: sections
-			})}}
-		</td>
-		<td style="vertical-align: bottom;"><input class="btn submit" id="add-relationship" type="button" value="+ Add"></td>
-	</tr>
-</table>
+{{ forms.lightswitchField({
+	first: true,
+	label: "Enable Same Side Relationships?"|t,
+	instructions: "This determines whether or not Same Side Relationships will run when an entry is saved. This must be turned on to use the feature."|t,
+	id: 'enableSsr',
+	name: 'enableSsr',
+	on: settings.enableSsr,
+	onLabel: "On"|t,
+	offLabel: "Off"|t
+}) }}
+
+<div class="field">
+	<div class="heading">
+		<label>Field and Section Relationships</label>
+		<div class="instructions">
+			<p>Please select and add each unique combination of Field and Section you want Many to Many to manage relationships for.</p>
+		</div>
+	</div>
+	<input type="hidden" name="selectedFieldsPlusSection" value="" />
+	<table class="data" id="ssr-table">
+		<tr>
+			<td>
+				{{ forms.selectField({
+				    label:  'Field'|t,
+				    id:     'linkedField',
+				    options: fields
+				})}}
+			</td>
+			<td>
+				{{ forms.selectField({
+				    label:   'Section'|t,
+				    id:      'linkedSection',
+				    options: sections
+				})}}
+			</td>
+			<td style="vertical-align: bottom;"><input class="btn submit" id="add-relationship" type="button" value="+ Add"></td>
+		</tr>
+	</table>
+</div>

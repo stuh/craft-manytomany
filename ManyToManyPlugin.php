@@ -13,6 +13,39 @@ class ManyToManyPlugin extends BasePlugin
         parent::init();
         if (craft()->request->isCpRequest()) {
             craft()->templates->includeJsResource('manytomany/js/hide-input.js');
+
+            // Save Entry Callback for Same Side Relationship management
+            craft()->on('entries.saveEntry', function(Event $event) {
+                $settings = craft()->plugins->getPlugin('manyToMany')->getSettings();
+                if (!empty($settings->enableSsr)) {
+                    // Assemble Allowed Sections
+                    $allowedSections = array();
+                    if (!empty($settings->selectedFieldsPlusSection))
+                    {
+                        foreach ($settings->selectedFieldsPlusSection as $perm)
+                        {
+                            $allowedSections[$perm['sectionHandle']] = $perm['fieldHandle'];
+                        }
+                    }
+                    // Check if the current Entry is within an allowed section
+                    $currentSection = $event->params['entry']->section->handle;
+                    if (array_key_exists($currentSection, $allowedSections))
+                    {
+                        $fieldHandle       = $allowedSections[$currentSection];
+                        $associatedEntries = $event->params['entry']->getContent()->getAttribute($fieldHandle);
+                        if (empty($associatedEntries))
+                        {
+                            $associatedEntries = array();
+                        }
+                        // Process Relationships and do another check. Just because this is an
+                        // allowed section doesn't neccessiarly mean the user has actually added
+                        // this field.
+                        if (isset($_POST['fields'][$fieldHandle])) {
+                            craft()->manyToMany->processSameSideRelationships($associatedEntries, $fieldHandle, $event->params['entry']->id, $currentSection);
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -59,6 +92,10 @@ class ManyToManyPlugin extends BasePlugin
      */
     public function getSettingsHtml()
     {
+
+        // Settings
+        $settings = $this->getSettings();
+
         // Group the Sections into an array
         $sections    = array();
         $allSections = craft()->sections->getAllSections();
@@ -74,13 +111,14 @@ class ManyToManyPlugin extends BasePlugin
         craft()->templates->includeJs('
             var currentNamespace  = "' . craft()->templates->getNamespace() . '";
             var currentIncrement  = 1;
-            var currentSelections = '.json_encode($this->getSettings()->selectedFieldsPlusSection).';
+            var currentSelections = '.json_encode($settings->selectedFieldsPlusSection).';
         ');
 
         // Render the Template
         return craft()->templates->render('manytomany/settings.twig', array(
             'fields'    => craft()->manyToMany->getAllEntryFields(),
             'sections'  => $sections,
+            'settings'  => $settings,
         ));
     }
 
@@ -92,6 +130,7 @@ class ManyToManyPlugin extends BasePlugin
     {
         return array(
             'selectedFieldsPlusSection' => array(AttributeType::Mixed, 'label' => 'Fields and Sections that Have the Relationship', 'default' => array()),
+            'enableSsr'                 => array(AttributeType::Bool, 'label' => 'Enable Same Side Relationships', 'default' => false),
         );
     }
 

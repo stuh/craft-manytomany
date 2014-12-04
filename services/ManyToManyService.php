@@ -25,9 +25,12 @@ class ManyToManyService extends BaseApplicationComponent
         {
             foreach ($fields as $field)
             {
-                if (in_array($field->getFieldType()->name, $this->allowed))
+                if (is_object($field->getFieldType()))
                 {
-                    $allowedFields[$field->handle] = $field->name;
+                    if (in_array($field->getFieldType()->name, $this->allowed))
+                    {
+                        $allowedFields[$field->handle] = $field->name;
+                    }
                 }
             }
         }
@@ -54,7 +57,7 @@ class ManyToManyService extends BaseApplicationComponent
         );
         $elements = craft()->elements->findElements($criteria);
         return $elements;
-        
+
     }
 
     /**
@@ -64,7 +67,7 @@ class ManyToManyService extends BaseApplicationComponent
      */
     public function saveRelationship(BaseFieldType $fieldType)
     {
-        
+
         // Set the element ID of this element
         $targetId = $fieldType->element->id;
 
@@ -81,7 +84,7 @@ class ManyToManyService extends BaseApplicationComponent
         // sourceId --> The elementIds that create the relationship initially. This is currently stored in the $postContent array
         // targetId --> $elementId, this is the reverse of the relationship
         $fieldId = $postContent['singleField'];
-        
+
         // The relationships we either want to add or leave
         $toAdd = array();
         if (!empty($postContent['add'])) {
@@ -93,11 +96,11 @@ class ManyToManyService extends BaseApplicationComponent
         if (!empty($postContent['delete'])) {
             $toDelete = $postContent['delete'];
         }
-        
+
         // First handle adding or updating the relationships that have to exist
         if (!empty($toAdd)) {
             foreach ($toAdd as $sourceId) {
-                
+
                 // 1.) Check and see if this relationship already exists. If it does, do nothing.
                 // 2.) If the relationship does NOT exist, create it.
                 $exists = craft()->db->createCommand()
@@ -107,7 +110,7 @@ class ManyToManyService extends BaseApplicationComponent
                     ->andWhere('sourceId = :sourceId', array(':sourceId' => $sourceId))
                     ->andWhere('targetId = :targetId', array(':targetId' => $targetId))
                     ->queryColumn();
-                
+
                 // The relationship doesn't exist. Add it! For now, the relationship get's added to the beginning
                 // of the sort order. This could change.
                 if (empty($exists)) {
@@ -148,17 +151,17 @@ class ManyToManyService extends BaseApplicationComponent
 
     /**
      * Checks for Same Side Relationship status and add and/or delete if necessary
-     * @param  array  $entries        
-     * @param  string $fieldHandle    
-     * @param  int $currentEntry   
-     * @param  string $currentSection 
-     * @return null               
+     * @param  array  $entries
+     * @param  string $fieldHandle
+     * @param  int $currentEntry
+     * @param  string $currentSection
+     * @return null
      */
     public function processSameSideRelationships($rawEntries = array(), $fieldHandle = null, $currentEntry = null, $currentSection = null)
     {
         // Filter so that only entries from this section are available.
         // This is so you can still use the same filed to manage relationships
-        // from one side, but to tie two together, they have to be in the 
+        // from one side, but to tie two together, they have to be in the
         // same section.
         $entries = $this->sanitizeEntries($rawEntries, $currentSection);
 
@@ -169,7 +172,7 @@ class ManyToManyService extends BaseApplicationComponent
 
         // Check if this field is setup as translatable, and if it is: exit. Not supported currently.
         if ($field->translatable) return;
-        
+
         // Check for the existing relationship and if it's not there, add it.
         if (!empty($entries))
         {
@@ -226,7 +229,7 @@ class ManyToManyService extends BaseApplicationComponent
                         ->andWhere('sourceId = :sourceId', array(':sourceId' => $currentEntry))
                         ->andWhere('targetId = :targetId', array(':targetId' => $id['sourceId']))
                         ->queryColumn();
-                    // It doesn't exist, meaning this relationship has no sibling. 
+                    // It doesn't exist, meaning this relationship has no sibling.
                     // Currently it's orphaned from it's two way association. Delete it.
                     if (empty($exists))
                     {
@@ -246,8 +249,8 @@ class ManyToManyService extends BaseApplicationComponent
 
     /**
      * Returns a list of entries in the defined section
-     * @param  array $entries 
-     * @param  string $section 
+     * @param  array $entries
+     * @param  string $section
      * @return array
      */
     private function sanitizeEntries($entries, $section)

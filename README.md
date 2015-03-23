@@ -46,7 +46,12 @@ Since this plugin relies on Craft's built in relationships, you can continue to 
 ##Same Side Relationships##
 As of v.0.2.0 Same Side Relationships are available. This allows the user to create relationships for entries that are within the same section. For example, if a section has an Entries FieldType of "Spouse" that forms a relationship with an entry in the same section, selecting it for one of the entries will create the relationship in the associated entry if it doesn't already exist.
 
+**Setup**
+
+To setup Same Side Relationships go to Control Panel > Plugins and click Many to Many. Here you can setup the various sections that will use this feature.
+
 **Usage**
+
  To use this feature, you need to select the Field that is used to create the relationship and the section in which it is being utilized. Then click the "Add" button. This way you can have multiple Same Side relationships and reuse a field should you want to.
 
  After saving these settings, Many to Many will automatically create the relationship if need be when an entry from the associated section is saved or created. No further action is needed on your part.

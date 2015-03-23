@@ -43,6 +43,17 @@ Since this plugin relies on Craft's built in relationships, you can continue to 
 {% endfor %}
 ```
 
+##Same Side Relationships##
+As of v.0.2.0 Same Side Relationships are available. This allows the user to create relationships for entries that are within the same section. For example, if a section has an Entries FieldType of "Spouse" that forms a relationship with an entry in the same section, selecting it for one of the entries will create the relationship in the associated entry if it doesn't already exist.
+
+**Usage**
+ To use this feature, you need to select the Field that is used to create the relationship and the section in which it is being utilized. Then click the "Add" button. This way you can have multiple Same Side relationships and reuse a field should you want to.
+
+ After saving these settings, Many to Many will automatically create the relationship if need be when an entry from the associated section is saved or created. No further action is needed on your part.
+
+**Note:** Same Side Relationships can only exist across entries that are in the same section. In other words, if you create an Entry field that allows entries from multiple sections and then try and use that as your Same Side Relationship Field, only relationships created within same sections are linked.
+
+Same Side Relationships, like Many to Many as a whole, is still considered in the beta stage. Use at your own risk.
 
 ##To Do##
 1. Allow the field to work across all (or at least more) Element Types. Currently only supports Entries
@@ -54,6 +65,7 @@ Since this plugin relies on Craft's built in relationships, you can continue to 
 Contact us on Twitter [@Page8Online](https://twitter.com/Page8Online) or visit us at [page-8.com](http://page-8.com)
 
 ##Version History##
+* 0.2.0 - Added Same Side Relationships
 * 0.1.2 - Added translatable text
 * 0.1.1 - Optimized the cache control. Instead of clearing all Entry types from the cache, just clears records related to the changed element
 * 0.1.0 - Initial Release

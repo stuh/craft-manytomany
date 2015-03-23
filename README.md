@@ -53,7 +53,7 @@ As of v.0.2.0 Same Side Relationships are available. This allows the user to cre
 
 **Note:** Same Side Relationships can only exist across entries that are in the same section. In other words, if you create an Entry field that allows entries from multiple sections and then try and use that as your Same Side Relationship Field, only relationships created within same sections are linked.
 
-Same Side Relationships, like Many to Many as a whole, is still considered in the beta stage. Use at your own risk.
+Same Side Relationships, like Many to Many as a whole, is still considered in the beta stage. Use at your own risk
 
 ##To Do##
 1. Allow the field to work across all (or at least more) Element Types. Currently only supports Entries

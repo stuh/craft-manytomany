@@ -130,7 +130,8 @@ class ManyToManyField extends Field
         // For this iteration of the plugin, everything is a SECTION, but it's setup so it can be
         // refactored in the future to allow for multiple types
 
-        if (!is_object($element) || $element->refHandle() != 'entry') {
+        // stuart@northcolour.com change to allow commerce products. They work fine.
+        if (!is_object($element) || ($element->refHandle() != 'entry' && $element->refHandle() != 'product')) {
             return Craft::t('manytomany',
                 'For this version of the {pluginName} plugin, you can only use this field with Entries.',
                 ['pluginName' => $plugin->name]);
